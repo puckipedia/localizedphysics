@@ -75,6 +75,46 @@ PHY.ComputeShadowControl = function(self,tab)
 	end
 	self:RealShadowControl(tab)
 end
+
+------------------------------------------------------------------------------------------
+-- Name: SetModelScale
+-- Desc: Override the SetModelScale function; required for sbep lifts to function.
+------------------------------------------------------------------------------------------
+if !ENT.RealSetModelScale then
+	ENT.RealSetModelScale = ENT.SetModelScale
+end
+ENT.SetModelScale = function(self,scale,delta)
+	local ship = self.InShip
+	if IsValid(ship) then
+		local data = GH.SHIPS[ship]
+		if data then
+    		    scale = scale * data.Scale
+    		end
+	end
+	print("Setting scale", self, scale)
+	self:RealSetModelScale(scale, delta)
+end
+
+------------------------------------------------------------------------------------------
+-- Name: GetModelScale
+-- Desc: Override the GetModelScale function; required for sbep lifts to function.
+------------------------------------------------------------------------------------------
+if !ENT.RealGetModelScale then
+	ENT.RealGetModelScale = ENT.GetModelScale
+end
+ENT.GetModelScale = function(self)
+	local scale = 1
+	local ship = self.InShip
+	if IsValid(ship) then
+		local data = GH.SHIPS[ship]
+		if data then
+    		    scale = data.Scale
+    		end
+	end
+	print("Getting scale", self, scale, self:RealGetModelScale() / scale)
+	return self:RealGetModelScale() / scale
+end
+
 ------------------------------------------------------------------------------------------
 -- Name: AddGhostRedirect
 -- Desc: Used to quickly override a function that physghosts need to redirect.

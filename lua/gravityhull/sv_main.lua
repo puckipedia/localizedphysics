@@ -187,11 +187,11 @@ function GH.ConstrainedEntities(ent)
 	return out
 end
 ------------------------------------------------------------------------------------------
--- Name: RegisterHull(Entity, Vertical Protrusion Factor, Gravity Percentage)
+-- Name: RegisterHull(Entity, Vertical Protrusion Factor, Gravity Percentage, Scale percentage)
 -- Desc: Begin designation of a hull-- call UpdateHull(ent) to fill in the rest.
 ------------------------------------------------------------------------------------------
-function GH.RegisterHull(ent,vpf,grav)
-	GravHull.SHIPS[ent] = {Hull = {}, Ghosts = {}, Contents = {}, Parts = {}, FloorDist = vpf, Gravity = grav}
+function GH.RegisterHull(ent,vpf,grav,scale)
+	GravHull.SHIPS[ent] = {Hull = {}, Ghosts = {}, Contents = {}, Parts = {}, FloorDist = vpf, Gravity = grav, Scale = scale / 100}
 	--[[net.Start("broadcastEntityAdded") For Halos.
 	net.WriteEntity(ent)
 	net.WriteTable(GravHull.SHIPS[ent])
@@ -464,6 +464,15 @@ local function FixMass(p)
 		end
 	end
 end
+
+function scale_vec(v, s)
+    vec = Vector()
+    vec:Set(v)
+    vec:Mul(s)
+
+    return vec
+end
+
 NO_VEL = 1
 ------------------------------------------------------------------------------------------
 -- Name: ShipEat
@@ -514,9 +523,45 @@ function GH.ShipEat(e,p,nm)
 				p.RocketHax:SetOwner(NULL)
 				p.RocketHax.Attacker = ply
 			end
+			p.ViewOffset = p:GetViewOffset()
+			p.ViewOffsetDucked = p:GetViewOffsetDucked()
+			p:SetViewOffset(scale_vec(p.ViewOffset, GH.SHIPS[e].Scale))
+			p:SetViewOffsetDucked(scale_vec(p.ViewOffsetDucked, GH.SHIPS[e].Scale))
+
+			p.HullBottom, p.HullTop = p:GetHull()
+			p.HullDuckBottom, p.HullDuckTop = p:GetHullDuck()
+			p:SetHull(scale_vec(p.HullBottom, GH.SHIPS[e].Scale), scale_vec(p.HullTop, GH.SHIPS[e].Scale))
+			p:SetHullDuck(scale_vec(p.HullDuckBottom, GH.SHIPS[e].Scale), scale_vec(p.HullDuckTop, GH.SHIPS[e].Scale))
+
+			p.WalkSpeed = p:GetWalkSpeed()
+			p.RunSpeed = p:GetRunSpeed()
+			p.CrouchedWalkSpeed = p:GetCrouchedWalkSpeed()
+
+			p:SetWalkSpeed(p.WalkSpeed * GH.SHIPS[e].Scale)
+			p:SetRunSpeed(p.RunSpeed * GH.SHIPS[e].Scale)
+			p:SetCrouchedWalkSpeed(p.CrouchedWalkSpeed * GH.SHIPS[e].Scale)
+
+			p.JumpPower = p:GetJumpPower()
+			p:SetJumpPower(p.JumpPower * GH.SHIPS[e].Scale)
 		elseif p:IsNPC() then
+
+			p.HullBottom, p.HullTop = p:GetHull()
+			p.HullDuckBottom, p.HullDuckTop = p:GetHullDuck()
+			p:SetHull(scale_vec(p.HullBottom, GH.SHIPS[e].Scale), scale_vec(p.HullTop, GH.SHIPS[e].Scale))
+			p:SetHullDuck(scale_vec(p.HullDuckBottom, GH.SHIPS[e].Scale), scale_vec(p.HullDuckTop, GH.SHIPS[e].Scale))
+
+			p.WalkSpeed = p:GetWalkSpeed()
+			p.RunSpeed = p:GetRunSpeed()
+			p.CrouchedWalkSpeed = p:GetCrouchedWalkSpeed()
+
+			p:SetWalkSpeed(p.WalkSpeed * GH.SHIPS[e].Scale)
+			p:SetRunSpeed(p.RunSpeed * GH.SHIPS[e].Scale)
+			p:SetCrouchedWalkSpeed(p.CrouchedWalkSpeed * GH.SHIPS[e].Scale)
 			p:SetRealPos(g:RealLocalToWorld(e:RealWorldToLocal(p:GetRealPos()+p:OBBCenter()))-p:OBBCenter())
 			p:SetLocalVelocity(g:RealLocalToWorld(e:RealWorldToLocal(p:GetRealVelocity()+e:GetRealPos()))-g:GetRealPos())
+
+			p.JumpPower = p:GetJumpPower()
+			p:SetJumpPower(p.JumpPower * GH.SHIPS[e].Scale)
 		else
 			local i
 			local pv,pp,pa = {},{},{}
@@ -567,6 +612,10 @@ function GH.ShipEat(e,p,nm)
 			end
 		end
 	end
+	p:SetModelScale(p:RealGetModelScale())
+    	if not p:IsVehicle() then
+		p:Activate()
+	end
 	GH.ShipObject(p,true,false,e,g)
 	if GH.Transition[p:GetClass()] then GH.Transition[p:GetClass()](p,e,g,oldpos,oldang) end
 	hook.Call("EnterShip",nil,p,e,g,oldpos,oldang)
@@ -581,6 +630,7 @@ function GH.ShipSpit(e,p,nm,nog,nt)
 	if !IsValid(p) then return end
 	if p.SLIsGhost then return end
 	GH.SHIPS[e].Contents[p] = nil
+	local oldscale = p:GetModelScale()
 	local oldpos,oldang = p:GetRealPos(),p:GetRealAngles()
 	if p:IsPlayer() then
 		if IsValid(p.Holding) then
@@ -604,8 +654,26 @@ function GH.ShipSpit(e,p,nm,nog,nt)
 		p:SetLocalVelocity(pvel+e:GetVelocity())
 		p:SetEyeAngles(pang)
 		p.SLRollFix = true
+		p:SetViewOffset(p.ViewOffset)
+		p:SetViewOffsetDucked(p.ViewOffsetDucked)
+		p:SetHull(p.HullBottom, p.HullTop)
+		p:SetHullDuck(p.HullDuckBottom, p.HullDuckTop)
+
+		p:SetWalkSpeed(p.WalkSpeed)
+		p:SetRunSpeed(p.RunSpeed)
+		p:SetCrouchedWalkSpeed(p.CrouchedWalkSpeed)
+
+		p:SetJumpPower(p.JumpPower)
 	elseif p:IsNPC() then
+		p:SetHull(p.HullBottom, p.HullTop)
+		p:SetHullDuck(p.HullDuckBottom, p.HullDuckTop)
+		
 		p:SetRealPos(e:LocalToWorld(g:WorldToLocal(p:GetRealPos()+p:OBBCenter()))-p:OBBCenter())
+
+		p:SetWalkSpeed(p.WalkSpeed)
+		p:SetRunSpeed(p.RunSpeed)
+		p:SetCrouchedWalkSpeed(p.CrouchedWalkSpeed)
+		p:SetJumpPower(p.JumpPower)
 	else
 		local i
 		local pv,pp,pa = {},{},{}
@@ -673,6 +741,10 @@ function GH.ShipSpit(e,p,nm,nog,nt)
 		end
 	end
 	if GH.Transition[p:GetClass()] then GH.Transition[p:GetClass()](p,g,e,oldpos,oldang) end
+    	p:SetModelScale(oldscale)
+    	if not p:IsVehicle() then
+		p:Activate()
+	end
 	hook.Call("ExitShip",nil,p,e,g,oldpos,oldang)
 end
 local NotRagdolls = {}

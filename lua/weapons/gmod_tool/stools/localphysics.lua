@@ -6,6 +6,7 @@ table.Merge(TOOL,{
 		gravnormal = 1,
 		gravity = 100,
 		entireset = 0,
+		scale = 100,
 	}
 })
 if CLIENT then
@@ -31,6 +32,7 @@ function TOOL.BuildCPanel(cp)
 							  Command = "localphysics_entireset"}) --same depcreated method -Bull
 	cp:AddControl("Slider",{Label = "Gravity Percentage", Description = "The percentage of normal gravity to apply to players and objects inside. Works with players and other objects! Works for NPCs.",
 							Type = "Integer", Min = 0, Max = 500, Command = "localphysics_gravity"})
+	cp:AddControl("Slider",{Label = "Scale", Description = "the scale of anything inside the hull", Type = "Integer", Min = 1, Max = 500, Command = "localphysics_scale"})
 	cp:AddControl("Button",{Label = "Help", Description = "Brief help/FAQ", Command = "ghd_help"})
 	cp:AddControl("Button",{Label = "Fix Camera", Description = "If you're teleporting to the sky when you enter a ship, click this until it works. Works just like Gravity Hull!", Command = "ghd_fixcamera"})
 end
@@ -41,7 +43,7 @@ function TOOL:LeftClick(tr)
 	local noconstraints = self:GetClientNumber("entireset")
 	if CLIENT then return IsValid(ent) and !GravHull.GHOSTHULLS[ent] end
 	if !(IsValid(ent) and ent:GetMoveType() == MOVETYPE_VPHYSICS and !GravHull.HULLS[ent]) then return false end
-	GravHull.RegisterHull(ent,self:GetClientNumber("floordist"),self:GetClientNumber("gravity"))
+	GravHull.RegisterHull(ent,self:GetClientNumber("floordist"),self:GetClientNumber("gravity"), self:GetClientNumber("scale"))
 	if self:GetClientNumber("gravnormal") > 0 then
 		GravHull.UpdateHull(ent,tr.HitNormal,noconstraints)
 	else
@@ -74,7 +76,6 @@ function TOOL:Reload(tr)
 	//idk this is for later
 end
 function TOOL:Think(tr)
-<<<<<<< HEAD
 
 end
 --[[ Shitty way of doing halos. Please improve. -Bull
@@ -113,7 +114,3 @@ end
 end
 hook.Remove("PreDrawHalos","gravhalo")
 ]]
-=======
-	//idk this is for later
-end
->>>>>>> origin/master
