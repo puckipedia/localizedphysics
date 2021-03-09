@@ -544,24 +544,8 @@ function GH.ShipEat(e,p,nm)
 			p.JumpPower = p:GetJumpPower()
 			p:SetJumpPower(p.JumpPower * GH.SHIPS[e].Scale)
 		elseif p:IsNPC() then
-
-			p.HullBottom, p.HullTop = p:GetHull()
-			p.HullDuckBottom, p.HullDuckTop = p:GetHullDuck()
-			p:SetHull(scale_vec(p.HullBottom, GH.SHIPS[e].Scale), scale_vec(p.HullTop, GH.SHIPS[e].Scale))
-			p:SetHullDuck(scale_vec(p.HullDuckBottom, GH.SHIPS[e].Scale), scale_vec(p.HullDuckTop, GH.SHIPS[e].Scale))
-
-			p.WalkSpeed = p:GetWalkSpeed()
-			p.RunSpeed = p:GetRunSpeed()
-			p.CrouchedWalkSpeed = p:GetCrouchedWalkSpeed()
-
-			p:SetWalkSpeed(p.WalkSpeed * GH.SHIPS[e].Scale)
-			p:SetRunSpeed(p.RunSpeed * GH.SHIPS[e].Scale)
-			p:SetCrouchedWalkSpeed(p.CrouchedWalkSpeed * GH.SHIPS[e].Scale)
 			p:SetRealPos(g:RealLocalToWorld(e:RealWorldToLocal(p:GetRealPos()+p:OBBCenter()))-p:OBBCenter())
 			p:SetLocalVelocity(g:RealLocalToWorld(e:RealWorldToLocal(p:GetRealVelocity()+e:GetRealPos()))-g:GetRealPos())
-
-			p.JumpPower = p:GetJumpPower()
-			p:SetJumpPower(p.JumpPower * GH.SHIPS[e].Scale)
 		else
 			local i
 			local pv,pp,pa = {},{},{}
@@ -665,15 +649,7 @@ function GH.ShipSpit(e,p,nm,nog,nt)
 
 		p:SetJumpPower(p.JumpPower)
 	elseif p:IsNPC() then
-		p:SetHull(p.HullBottom, p.HullTop)
-		p:SetHullDuck(p.HullDuckBottom, p.HullDuckTop)
-		
 		p:SetRealPos(e:LocalToWorld(g:WorldToLocal(p:GetRealPos()+p:OBBCenter()))-p:OBBCenter())
-
-		p:SetWalkSpeed(p.WalkSpeed)
-		p:SetRunSpeed(p.RunSpeed)
-		p:SetCrouchedWalkSpeed(p.CrouchedWalkSpeed)
-		p:SetJumpPower(p.JumpPower)
 	else
 		local i
 		local pv,pp,pa = {},{},{}

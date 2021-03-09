@@ -84,6 +84,9 @@ if !ENT.RealSetModelScale then
 	ENT.RealSetModelScale = ENT.SetModelScale
 end
 ENT.SetModelScale = function(self,scale,delta)
+	if scale == nil then
+    		scale = 1
+    	end
 	local ship = self.InShip
 	if IsValid(ship) then
 		local data = GH.SHIPS[ship]
